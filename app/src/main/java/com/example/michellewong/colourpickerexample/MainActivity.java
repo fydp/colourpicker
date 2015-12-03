@@ -3,6 +3,8 @@ package com.example.michellewong.colourpickerexample;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.graphics.Color;
+import android.media.Image;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -11,8 +13,15 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
+
+import com.larswerkman.holocolorpicker.ColorPicker;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String COLOUR_PICKER_TAG = "colour_picker";
+    public static final String COLOUR_ARG = "colour";
+    ImageView mSquare;
+    int mSelectedColour = Color.RED;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,23 +30,56 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        View fab = findViewById(R.id.colour_picker_square);
-        fab.setOnClickListener(new View.OnClickListener() {
+        mSquare = (ImageView)findViewById(R.id.colour_picker_square);
+        View mSquareTouch = findViewById(R.id.colour_picker_square_touch);
+        if (savedInstanceState != null) {
+            onColourChanged(savedInstanceState.getInt(COLOUR_ARG));
+        }
+
+        mSquareTouch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 FragmentManager fragmentManager = getFragmentManager();
                 FragmentTransaction ft = fragmentManager.beginTransaction();
-                Fragment current = fragmentManager.findFragmentByTag("colour_picker");
+                Fragment current = fragmentManager.findFragmentByTag(COLOUR_PICKER_TAG);
 
                 if (current == null) {
+                    Bundle args = new Bundle();
+                    args.putInt(COLOUR_ARG, mSelectedColour);
                     current = new ColourPickerFragment();
-                    ft.add(R.id.fragment_container, current, "colour_picker");
+                    current.setArguments(args);
+                    ft.add(R.id.fragment_container, current, COLOUR_PICKER_TAG);
                 } else {
+                    ft.setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out);
                     ft.remove(current);
                 }
                ft.commit();
             }
         });
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(COLOUR_ARG, mSelectedColour);
+    }
+
+    public void onColourChanged(int colour) {
+        mSelectedColour = colour;
+        if (mSquare != null) {
+            mSquare.setColorFilter(mSelectedColour);
+        }
+    }
+
+    public void onColourSelectionTimeout() {
+        FragmentManager fragmentManager = getFragmentManager();
+        Fragment current = fragmentManager.findFragmentByTag(COLOUR_PICKER_TAG);
+        if (current != null) {
+            FragmentTransaction ft = fragmentManager.beginTransaction();
+            ft.setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out);
+            ft.remove(current);
+            ft.commit();
+        }
     }
 
     @Override
