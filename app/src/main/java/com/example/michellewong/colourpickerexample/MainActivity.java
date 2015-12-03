@@ -72,14 +72,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onColourSelectionTimeout() {
-        FragmentManager fragmentManager = getFragmentManager();
-        Fragment current = fragmentManager.findFragmentByTag(COLOUR_PICKER_TAG);
-        if (current != null) {
-            FragmentTransaction ft = fragmentManager.beginTransaction();
-            ft.setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out);
-            ft.remove(current);
-            ft.commit();
+        try {
+            FragmentManager fragmentManager = getFragmentManager();
+            Fragment current = fragmentManager.findFragmentByTag(COLOUR_PICKER_TAG);
+            if (current != null) {
+                FragmentTransaction ft = fragmentManager.beginTransaction();
+                ft.setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out);
+                ft.remove(current);
+                ft.commit();
+            }
+        } catch (IllegalStateException ignored) {
+            // no way to avoid if savedinstance state already called
         }
+
     }
 
     @Override
